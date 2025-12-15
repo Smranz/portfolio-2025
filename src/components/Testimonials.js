@@ -1,7 +1,9 @@
 "use client";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Star, Send, User, Briefcase, Mail } from "lucide-react";
+import { Star, Send, User, Briefcase } from "lucide-react";
+import { db } from "@/lib/firebase";
+import { collection, addDoc, onSnapshot, query, orderBy } from "firebase/firestore";
 
 export default function Testimonials() {
     const [reviews, setReviews] = useState([]);
@@ -11,46 +13,45 @@ export default function Testimonials() {
         message: "",
         rating: 5
     });
-    const [isClient, setIsClient] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
-    // Load reviews from LocalStorage on mount
+    // Real-time listener for reviews
     useEffect(() => {
-        setIsClient(true);
-        const savedReviews = localStorage.getItem("portfolioRequests");
-        if (savedReviews) {
-            setReviews(JSON.parse(savedReviews));
-        }
+        const q = query(collection(db, "reviews"), orderBy("createdAt", "desc"));
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+            const fetchedReviews = snapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            }));
+            setReviews(fetchedReviews);
+        });
+
+        return () => unsubscribe();
     }, []);
 
-    // Save reviews to LocalStorage whenever they change
-    useEffect(() => {
-        if (isClient) {
-            localStorage.setItem("portfolioRequests", JSON.stringify(reviews));
-        }
-    }, [reviews, isClient]);
-
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         if (!formData.name || !formData.message) return;
 
-        const newReview = {
-            id: Date.now(),
-            name: formData.name,
-            role: formData.role || "Client",
-            text: formData.message,
-            initials: formData.name.substring(0, 2).toUpperCase(),
-            rating: formData.rating
-        };
+        setIsSubmitting(true);
 
-        setReviews([newReview, ...reviews]);
-        setFormData({ name: "", role: "", message: "", rating: 5 });
-    };
+        try {
+            await addDoc(collection(db, "reviews"), {
+                name: formData.name,
+                role: formData.role || "Client",
+                text: formData.message,
+                initials: formData.name.substring(0, 2).toUpperCase(),
+                rating: formData.rating,
+                createdAt: new Date().toISOString()
+            });
 
-    const handleEmailReview = () => {
-        if (!formData.name || !formData.message) return;
-        const subject = `New Portfolio Review from ${formData.name}`;
-        const body = `Name: ${formData.name}%0D%0ARole: ${formData.role}%0D%0ARating: ${formData.rating} Stars%0D%0A%0D%0AReview:%0D%0A${formData.message}`;
-        window.location.href = `mailto:samranzahid164@gmail.com?subject=${subject}&body=${body}`;
+            setFormData({ name: "", role: "", message: "", rating: 5 });
+        } catch (error) {
+            console.error("Error adding review: ", error);
+            alert("Failed to submit review. Please try again.");
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     return (
@@ -138,25 +139,16 @@ export default function Testimonials() {
                             required
                         />
 
-                        <div className="grid grid-cols-2 gap-4">
-                            <button
-                                type="submit"
-                                className="w-full py-4 gradient-bg rounded-xl font-bold text-white shadow-lg shadow-purple-500/20 hover:shadow-purple-500/40 hover:scale-[1.02] transition-all flex items-center justify-center gap-2"
-                            >
-                                <Send size={18} />
-                                Post Locally
-                            </button>
-                            <button
-                                type="button"
-                                onClick={handleEmailReview}
-                                className="w-full py-4 bg-white/5 border border-white/10 rounded-xl font-bold text-white hover:bg-white/10 hover:scale-[1.02] transition-all flex items-center justify-center gap-2"
-                            >
-                                <Mail size={18} />
-                                Send via Email
-                            </button>
-                        </div>
+                        <button
+                            type="submit"
+                            disabled={isSubmitting}
+                            className="w-full py-4 gradient-bg rounded-xl font-bold text-white shadow-lg shadow-purple-500/20 hover:shadow-purple-500/40 hover:scale-[1.02] transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            <Send size={18} />
+                            {isSubmitting ? "Posting..." : "Post Public Review"}
+                        </button>
                         <p className="text-xs text-gray-500 text-center mt-2">
-                            *Post Locally saves to your device. Send via Email to submit for official implementation.
+                            *Reviews are instantly public and visible to everyone.
                         </p>
                     </form>
                 </motion.div>
@@ -164,7 +156,7 @@ export default function Testimonials() {
                 {/* Reviews List */}
                 <div className="space-y-6">
                     <AnimatePresence mode="popLayout">
-                        {(!isClient || reviews.length === 0) ? (
+                        {reviews.length === 0 ? (
                             <motion.div
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
