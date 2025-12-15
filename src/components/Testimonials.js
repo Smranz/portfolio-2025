@@ -14,6 +14,14 @@ export default function Testimonials() {
         rating: 5
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [configError, setConfigError] = useState(null);
+
+    // Check configuration on load
+    useEffect(() => {
+        if (!process.env.NEXT_PUBLIC_FIREBASE_API_KEY) {
+            setConfigError("Missing Firebase configuration. Please add Environment Variables in Vercel and Redeploy.");
+        }
+    }, []);
 
     // Real-time listener for reviews
     useEffect(() => {
