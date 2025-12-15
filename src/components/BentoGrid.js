@@ -204,7 +204,7 @@ function BentoItem({ item, index, onClick }) {
             className={`
               bg-[#0a0a0a] rounded-3xl border border-white/10 overflow-hidden relative cursor-pointer
               hover:border-purple-500/30 hover:-translate-y-1 hover:shadow-lg hover:shadow-purple-500/30 transition-all group
-              ${item.size === 'large' ? 'md:col-span-2 md:row-span-2' : ''}
+              ${item.size === 'large' ? 'col-span-1 row-span-2 md:col-span-2 md:row-span-2' : ''}
               ${item.size === 'tall' ? 'md:row-span-2' : ''}
               ${item.size === 'wide' ? 'md:col-span-2' : ''}
             `}
