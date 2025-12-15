@@ -141,7 +141,7 @@ function GalleryModal({ item, onClose }) {
                         </button>
                     </div>
 
-                    <div className="overflow-y-auto p-6 bg-[#111]">
+                    <div className="overflow-y-auto p-4 md:p-6 bg-[#111]">
                         <div className="columns-1 md:columns-2 gap-4 space-y-4">
                             {mediaList.map((media, idx) => (
                                 <div
@@ -275,7 +275,7 @@ export default function BentoGrid() {
     };
 
     return (
-        <section className="py-32 px-8 max-w-7xl mx-auto">
+        <section className="py-20 px-4 md:px-8 max-w-7xl mx-auto">
             <div className="text-center mb-16">
                 <motion.p
                     className="text-sm text-purple-500 uppercase tracking-widest mb-4"
