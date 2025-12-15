@@ -48,7 +48,15 @@ export default function Testimonials() {
             setFormData({ name: "", role: "", message: "", rating: 5 });
         } catch (error) {
             console.error("Error adding review: ", error);
-            alert("Failed to submit review. Please try again.");
+            let errorMessage = "Failed to submit review.";
+            if (error.code === 'permission-denied') {
+                errorMessage = "Database Permission Denied. Check Firestore Rules (set to Test Mode).";
+            } else if (error.code === 'unavailable') {
+                errorMessage = "Network/Service Unavailable. Check your connection or Firebase Project ID.";
+            } else if (error.message.includes("api-key")) {
+                errorMessage = "Missing API Key. Check Vercel Environment Variables.";
+            }
+            alert(errorMessage + " \nDetail: " + error.message);
         } finally {
             setIsSubmitting(false);
         }
