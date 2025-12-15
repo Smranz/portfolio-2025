@@ -33,8 +33,8 @@ export default function SkillsOrbit() {
 
             {/* Solar System Container */}
             <motion.div
-                className="hidden md:block relative w-full max-w-3xl aspect-square mx-auto"
-                initial={{ opacity: 0, scale: 0.8 }}
+                className="relative w-full max-w-3xl aspect-square mx-auto scale-[0.55] md:scale-100 origin-center -my-20 md:my-0"
+                initial={{ opacity: 0, scale: 0.4 }}
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.8 }}
@@ -125,29 +125,7 @@ export default function SkillsOrbit() {
                 ))}
             </motion.div>
 
-            {/* Mobile List */}
-            <div className="md:hidden flex flex-wrap justify-center gap-6 mt-8">
-                {tools.map((tool, index) => (
-                    <motion.div
-                        key={tool.name}
-                        className="bg-white rounded-full p-4 hover:shadow-lg transition-all"
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ delay: index * 0.1 }}
-                        whileHover={{ scale: 1.1 }}
-                    >
-                        <Image
-                            src={tool.logo}
-                            alt={tool.name}
-                            width={48}
-                            height={48}
-                            className="object-contain mx-auto mb-2"
-                        />
-                        <p className="text-xs font-medium text-gray-900">{tool.name}</p>
-                    </motion.div>
-                ))}
-            </div>
+
 
             <style jsx>{`
         @keyframes counter-rotate {
