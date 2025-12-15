@@ -10,7 +10,7 @@ const links = [
 export default function Navbar() {
     return (
         <motion.nav
-            className="fixed top-6 left-1/2 -translate-x-1/2 z-[1000] flex items-center justify-center gap-6 px-10 py-4 glass rounded-full"
+            className="fixed top-6 left-1/2 -translate-x-1/2 z-[1000] flex items-center justify-center gap-2 md:gap-6 px-4 md:px-10 py-3 md:py-4 glass rounded-full w-[90%] md:w-auto max-w-sm md:max-w-none"
             initial={{ y: -100, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ duration: 0.6, ease: "easeOut" }}
@@ -23,7 +23,7 @@ export default function Navbar() {
                 <a
                     key={link.name}
                     href={link.href}
-                    className="text-gray-400 text-base font-medium px-5 py-2.5 rounded-full hover:text-white hover:bg-white/5 transition-all"
+                    className="text-gray-400 text-sm md:text-base font-medium px-2 md:px-5 py-2 rounded-full hover:text-white hover:bg-white/5 transition-all"
                 >
                     {link.name}
                 </a>
