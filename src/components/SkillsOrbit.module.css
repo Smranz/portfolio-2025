@@ -1,0 +1,141 @@
+.section {
+    padding: 120px 2rem;
+    max-width: var(--container-width);
+    margin: 0 auto;
+    text-align: center;
+}
+
+.label {
+    font-size: 0.85rem;
+    color: var(--accent-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    margin-bottom: 1rem;
+}
+
+.heading {
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    font-weight: 700;
+    margin-bottom: 4rem;
+}
+
+/* Orbit Container */
+.orbitContainer {
+    position: relative;
+    width: 100%;
+    max-width: 600px;
+    aspect-ratio: 1;
+    margin: 0 auto;
+}
+
+/* Center Icon */
+.centerIcon {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100px;
+    height: 100px;
+    background: var(--gradient-primary);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    box-shadow: var(--shadow-glow);
+    z-index: 10;
+}
+
+/* Orbit Rings */
+.orbit {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border: 1px dashed var(--border-color);
+    border-radius: 50%;
+}
+
+.orbit1 {
+    width: 250px;
+    height: 250px;
+}
+
+.orbit2 {
+    width: 400px;
+    height: 400px;
+}
+
+.orbit3 {
+    width: 550px;
+    height: 550px;
+}
+
+/* Tool Icons */
+.toolIcon {
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    transition: var(--transition-smooth);
+    cursor: pointer;
+}
+
+.toolIcon:hover {
+    border-color: var(--accent-primary);
+    transform: scale(1.15);
+    box-shadow: var(--shadow-glow);
+    z-index: 20;
+}
+
+.toolIcon span {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.toolIcon svg {
+    width: 24px;
+    height: 24px;
+}
+
+/* Skills List (for mobile) */
+.skillsList {
+    display: none;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.skillPill {
+    padding: 0.75rem 1.5rem;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 100px;
+    font-size: 0.9rem;
+    transition: var(--transition-fast);
+}
+
+.skillPill:hover {
+    border-color: var(--accent-primary);
+}
+
+@media (max-width: 768px) {
+    .orbitContainer {
+        display: none;
+    }
+
+    .skillsList {
+        display: flex;
+    }
+}

@@ -1,0 +1,155 @@
+.section {
+    padding: 120px 2rem;
+    max-width: var(--container-width);
+    margin: 0 auto;
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 4rem;
+}
+
+.label {
+    font-size: 0.85rem;
+    color: var(--accent-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    margin-bottom: 1rem;
+}
+
+.heading {
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    font-weight: 700;
+    margin-bottom: 1rem;
+}
+
+.subtitle {
+    color: var(--text-secondary);
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+/* Card Stack Container */
+.stackContainer {
+    position: relative;
+    height: 500px;
+    max-width: 900px;
+    margin: 0 auto;
+    perspective: 1000px;
+}
+
+.cardWrapper {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    cursor: grab;
+}
+
+.cardWrapper:active {
+    cursor: grabbing;
+}
+
+.card {
+    width: 100%;
+    height: 100%;
+    background: var(--bg-secondary);
+    border-radius: 24px;
+    border: 1px solid var(--border-color);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: var(--shadow-lg);
+    transition: border-color var(--transition-smooth);
+}
+
+.card:hover {
+    border-color: var(--border-glow);
+}
+
+.cardImage {
+    flex: 1;
+    background: var(--gradient-card);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.cardImageBg {
+    position: absolute;
+    inset: 0;
+    opacity: 0.5;
+}
+
+.cardNumber {
+    font-size: 8rem;
+    font-weight: 800;
+    color: rgba(255, 255, 255, 0.03);
+    position: absolute;
+}
+
+.cardContent {
+    padding: 2rem;
+    background: var(--bg-secondary);
+}
+
+.cardCategory {
+    font-size: 0.75rem;
+    color: var(--accent-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 0.5rem;
+}
+
+.cardTitle {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.cardDesc {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    line-height: 1.6;
+}
+
+/* Navigation Dots */
+.dots {
+    display: flex;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-top: 3rem;
+}
+
+.dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--border-color);
+    cursor: pointer;
+    transition: var(--transition-fast);
+}
+
+.dotActive {
+    background: var(--accent-primary);
+    transform: scale(1.2);
+}
+
+/* Swipe Hint */
+.swipeHint {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    margin-top: 1.5rem;
+}
+
+@media (max-width: 768px) {
+    .stackContainer {
+        height: 450px;
+    }
+
+    .cardNumber {
+        font-size: 5rem;
+    }
+}

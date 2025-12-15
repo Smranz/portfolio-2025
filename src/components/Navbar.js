@@ -1,0 +1,40 @@
+"use client";
+import { motion } from "framer-motion";
+
+const links = [
+    { name: "Work", href: "#projects" },
+    { name: "About", href: "#about" },
+    { name: "Skills", href: "#skills" },
+];
+
+export default function Navbar() {
+    return (
+        <motion.nav
+            className="fixed top-6 left-1/2 -translate-x-1/2 z-[1000] flex items-center justify-center gap-6 px-10 py-4 glass rounded-full"
+            initial={{ y: -100, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
+        >
+            <a href="#hero" className="font-bold text-2xl mr-8 gradient-text">
+                Portfolio
+            </a>
+
+            {links.map((link) => (
+                <a
+                    key={link.name}
+                    href={link.href}
+                    className="text-gray-400 text-base font-medium px-5 py-2.5 rounded-full hover:text-white hover:bg-white/5 transition-all"
+                >
+                    {link.name}
+                </a>
+            ))}
+
+            <a
+                href="#contact"
+                className="ml-4 px-6 py-2.5 gradient-bg text-white rounded-full font-semibold text-base hover:opacity-90 transition-opacity"
+            >
+                Let's Talk
+            </a>
+        </motion.nav>
+    );
+}

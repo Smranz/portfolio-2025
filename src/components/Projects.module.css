@@ -1,0 +1,67 @@
+.section {
+    padding: 8rem 2rem;
+    max-width: var(--container-width);
+    margin: 0 auto;
+}
+
+.heading {
+    font-size: 3rem;
+    margin-bottom: 3rem;
+    text-align: center;
+}
+
+.slide {
+    background: var(--bg-secondary);
+    border-radius: 20px;
+    overflow: hidden;
+    height: 400px;
+    position: relative;
+    border: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+}
+
+.imagePlaceholder {
+    flex: 1;
+    background: linear-gradient(45deg, #222, #333);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Shimmer Effect */
+.imagePlaceholder::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.05), transparent);
+    transform: skewX(-20deg);
+    animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+    100% {
+        left: 200%;
+    }
+}
+
+.content {
+    padding: 1.5rem;
+}
+
+.projectTitle {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.projectDesc {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+/* Swiper Customization */
+.swiperContainer {
+    padding-bottom: 3rem;
+}

@@ -1,0 +1,162 @@
+.section {
+    padding: 120px 2rem;
+    max-width: var(--container-width);
+    margin: 0 auto;
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 4rem;
+}
+
+.label {
+    font-size: 0.85rem;
+    color: var(--accent-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    margin-bottom: 1rem;
+}
+
+.heading {
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    font-weight: 700;
+}
+
+/* Bento Grid */
+.grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: repeat(3, 200px);
+    gap: 1.5rem;
+}
+
+.item {
+    background: var(--bg-secondary);
+    border-radius: 20px;
+    border: 1px solid var(--border-color);
+    overflow: hidden;
+    position: relative;
+    cursor: pointer;
+    transition: var(--transition-smooth);
+}
+
+.item:hover {
+    border-color: var(--border-glow);
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-glow);
+}
+
+/* Grid Item Sizes */
+.itemLarge {
+    grid-column: span 2;
+    grid-row: span 2;
+}
+
+.itemTall {
+    grid-row: span 2;
+}
+
+.itemWide {
+    grid-column: span 2;
+}
+
+/* Item Content */
+.itemBg {
+    position: absolute;
+    inset: 0;
+    opacity: 0.6;
+    transition: var(--transition-smooth);
+}
+
+.item:hover .itemBg {
+    opacity: 0.8;
+    transform: scale(1.05);
+}
+
+.itemOverlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.8) 0%, transparent 50%);
+    opacity: 0;
+    transition: var(--transition-smooth);
+}
+
+.item:hover .itemOverlay {
+    opacity: 1;
+}
+
+.itemContent {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 1.5rem;
+    transform: translateY(20px);
+    opacity: 0;
+    transition: var(--transition-smooth);
+}
+
+.item:hover .itemContent {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+.itemCategory {
+    font-size: 0.7rem;
+    color: var(--accent-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 0.25rem;
+}
+
+.itemTitle {
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+/* Icon in corner */
+.itemIcon {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    width: 40px;
+    height: 40px;
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transform: scale(0.8);
+    transition: var(--transition-smooth);
+}
+
+.item:hover .itemIcon {
+    opacity: 1;
+    transform: scale(1);
+}
+
+@media (max-width: 1024px) {
+    .grid {
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: auto;
+    }
+
+    .itemLarge,
+    .itemTall,
+    .itemWide {
+        grid-column: span 1;
+        grid-row: span 1;
+    }
+
+    .item {
+        min-height: 250px;
+    }
+}
+
+@media (max-width: 640px) {
+    .grid {
+        grid-template-columns: 1fr;
+    }
+}
