@@ -1,16 +1,36 @@
 "use client";
-import { motion } from "framer-motion";
-import { Star } from "lucide-react";
-
-const testimonials = [
-    { id: 1, text: "Exceptional design work! The attention to detail and creative approach exceeded our expectations. Highly recommended.", name: "Sarah Johnson", role: "Product Manager, TechCorp", initials: "SJ" },
-    { id: 2, text: "A true professional who understands user experience. Our conversion rates improved significantly after the redesign.", name: "Michael Chen", role: "CEO, StartupXYZ", initials: "MC" },
-    { id: 3, text: "Creative, punctual, and incredibly talented. The final product was even better than what we envisioned.", name: "Emily Davis", role: "Marketing Director, BrandCo", initials: "ED" },
-];
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Star, Send, User, Briefcase } from "lucide-react";
 
 export default function Testimonials() {
+    const [reviews, setReviews] = useState([]);
+    const [formData, setFormData] = useState({
+        name: "",
+        role: "",
+        message: "",
+        rating: 5
+    });
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        if (!formData.name || !formData.message) return;
+
+        const newReview = {
+            id: Date.now(),
+            name: formData.name,
+            role: formData.role || "Client",
+            text: formData.message,
+            initials: formData.name.substring(0, 2).toUpperCase(),
+            rating: formData.rating
+        };
+
+        setReviews([newReview, ...reviews]);
+        setFormData({ name: "", role: "", message: "", rating: 5 });
+    };
+
     return (
-        <section className="py-32 px-8 max-w-7xl mx-auto">
+        <section className="py-20 px-4 md:px-8 max-w-7xl mx-auto">
             <div className="text-center mb-16">
                 <motion.p
                     className="text-sm text-purple-500 uppercase tracking-widest mb-4"
@@ -27,40 +47,137 @@ export default function Testimonials() {
                     viewport={{ once: true }}
                     transition={{ delay: 0.1 }}
                 >
-                    What Clients Say
+                    Client Reviews
                 </motion.h2>
             </div>
 
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {testimonials.map((testimonial, index) => (
-                    <motion.div
-                        key={testimonial.id}
-                        className="glass p-8 rounded-3xl relative overflow-hidden hover:-translate-y-2 hover:border-purple-500/30 hover:shadow-lg hover:shadow-purple-500/20 transition-all group"
-                        initial={{ opacity: 0, y: 30 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ delay: index * 0.15 }}
-                    >
-                        <div className="absolute inset-0 bg-gradient-radial from-purple-500/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div className="grid lg:grid-cols-2 gap-12 items-start">
+                {/* Form Section */}
+                <motion.div
+                    className="glass p-8 rounded-3xl"
+                    initial={{ opacity: 0, x: -30 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true }}
+                >
+                    <h3 className="text-2xl font-bold mb-6">Write a Review</h3>
+                    <form onSubmit={handleSubmit} className="space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="relative">
+                                <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                                <input
+                                    type="text"
+                                    placeholder="Your Name"
+                                    className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-12 pr-4 focus:outline-none focus:border-purple-500 transition-colors"
+                                    value={formData.name}
+                                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                    required
+                                />
+                            </div>
+                            <div className="relative">
+                                <Briefcase className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                                <input
+                                    type="text"
+                                    placeholder="Role / Company (Optional)"
+                                    className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-12 pr-4 focus:outline-none focus:border-purple-500 transition-colors"
+                                    value={formData.role}
+                                    onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                                />
+                            </div>
+                        </div>
 
-                        <div className="text-6xl leading-none gradient-text mb-4 relative z-10">"</div>
-                        <div className="flex gap-1 mb-4 relative z-10">
-                            {[...Array(5)].map((_, i) => (
-                                <Star key={i} size={16} fill="#f59e0b" strokeWidth={0} />
-                            ))}
-                        </div>
-                        <p className="text-gray-400 leading-relaxed mb-8 relative z-10">{testimonial.text}</p>
-                        <div className="flex items-center gap-4 relative z-10">
-                            <div className="w-12 h-12 gradient-bg rounded-full flex items-center justify-center font-semibold text-lg">
-                                {testimonial.initials}
+                        <div>
+                            <label className="block text-sm text-gray-400 mb-2">Rating</label>
+                            <div className="flex gap-2">
+                                {[1, 2, 3, 4, 5].map((star) => (
+                                    <button
+                                        key={star}
+                                        type="button"
+                                        onClick={() => setFormData({ ...formData, rating: star })}
+                                        className="focus:outline-none transition-transform hover:scale-110"
+                                    >
+                                        <Star
+                                            size={24}
+                                            fill={star <= formData.rating ? "#f59e0b" : "transparent"}
+                                            stroke={star <= formData.rating ? "#f59e0b" : "#4b5563"}
+                                        />
+                                    </button>
+                                ))}
                             </div>
-                            <div>
-                                <span className="font-semibold block">{testimonial.name}</span>
-                                <span className="text-gray-500 text-sm">{testimonial.role}</span>
-                            </div>
                         </div>
-                    </motion.div>
-                ))}
+
+                        <textarea
+                            placeholder="Share your experience working with me..."
+                            rows="4"
+                            className="w-full bg-white/5 border border-white/10 rounded-xl p-4 focus:outline-none focus:border-purple-500 transition-colors resize-none"
+                            value={formData.message}
+                            onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                            required
+                        />
+
+                        <button
+                            type="submit"
+                            className="w-full py-4 gradient-bg rounded-xl font-bold text-white shadow-lg shadow-purple-500/20 hover:shadow-purple-500/40 hover:scale-[1.02] transition-all flex items-center justify-center gap-2"
+                        >
+                            <Send size={18} />
+                            Submit Review
+                        </button>
+                        <p className="text-xs text-gray-500 text-center mt-2">
+                            *Reviews are displayed instantly for this session.
+                        </p>
+                    </form>
+                </motion.div>
+
+                {/* Reviews List */}
+                <div className="space-y-6">
+                    <AnimatePresence mode="popLayout">
+                        {reviews.length === 0 ? (
+                            <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                className="text-center py-12 glass rounded-3xl border-dashed border-2 border-white/10"
+                            >
+                                <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <Star size={32} className="text-gray-600" />
+                                </div>
+                                <h3 className="text-xl font-semibold mb-2">No reviews yet</h3>
+                                <p className="text-gray-400">Be the first to leave a review!</p>
+                            </motion.div>
+                        ) : (
+                            reviews.map((review) => (
+                                <motion.div
+                                    key={review.id}
+                                    layout
+                                    initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                                    className="glass p-6 rounded-2xl border border-white/10"
+                                >
+                                    <div className="flex justify-between items-start mb-4">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 gradient-bg rounded-full flex items-center justify-center font-bold text-sm">
+                                                {review.initials}
+                                            </div>
+                                            <div>
+                                                <h4 className="font-bold leading-tight">{review.name}</h4>
+                                                <p className="text-gray-500 text-xs">{review.role}</p>
+                                            </div>
+                                        </div>
+                                        <div className="flex gap-0.5">
+                                            {[...Array(5)].map((_, i) => (
+                                                <Star
+                                                    key={i}
+                                                    size={14}
+                                                    fill={i < review.rating ? "#f59e0b" : "transparent"}
+                                                    stroke={i < review.rating ? "#f59e0b" : "#4b5563"}
+                                                />
+                                            ))}
+                                        </div>
+                                    </div>
+                                    <p className="text-gray-300 text-sm leading-relaxed">"{review.text}"</p>
+                                </motion.div>
+                            ))
+                        )}
+                    </AnimatePresence>
+                </div>
             </div>
         </section>
     );
