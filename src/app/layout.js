@@ -8,7 +8,7 @@ const outfit = Outfit({
 });
 
 export const metadata = {
-  metadataBase: new URL('https://samran.studio'),
+  metadataBase: new URL('https://portfolio.samran.studio'),
   title: "Portfolio | UI/UX Designer",
   description: "Professional Portfolio of a UI/UX Graphics Designer",
 };
