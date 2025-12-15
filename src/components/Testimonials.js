@@ -1,7 +1,7 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Star, Send, User, Briefcase } from "lucide-react";
+import { Star, Send, User, Briefcase, Mail } from "lucide-react";
 
 export default function Testimonials() {
     const [reviews, setReviews] = useState([]);
@@ -11,6 +11,23 @@ export default function Testimonials() {
         message: "",
         rating: 5
     });
+    const [isClient, setIsClient] = useState(false);
+
+    // Load reviews from LocalStorage on mount
+    useEffect(() => {
+        setIsClient(true);
+        const savedReviews = localStorage.getItem("portfolioRequests");
+        if (savedReviews) {
+            setReviews(JSON.parse(savedReviews));
+        }
+    }, []);
+
+    // Save reviews to LocalStorage whenever they change
+    useEffect(() => {
+        if (isClient) {
+            localStorage.setItem("portfolioRequests", JSON.stringify(reviews));
+        }
+    }, [reviews, isClient]);
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -27,6 +44,13 @@ export default function Testimonials() {
 
         setReviews([newReview, ...reviews]);
         setFormData({ name: "", role: "", message: "", rating: 5 });
+    };
+
+    const handleEmailReview = () => {
+        if (!formData.name || !formData.message) return;
+        const subject = `New Portfolio Review from ${formData.name}`;
+        const body = `Name: ${formData.name}%0D%0ARole: ${formData.role}%0D%0ARating: ${formData.rating} Stars%0D%0A%0D%0AReview:%0D%0A${formData.message}`;
+        window.location.href = `mailto:samranzahid164@gmail.com?subject=${subject}&body=${body}`;
     };
 
     return (
@@ -114,15 +138,25 @@ export default function Testimonials() {
                             required
                         />
 
-                        <button
-                            type="submit"
-                            className="w-full py-4 gradient-bg rounded-xl font-bold text-white shadow-lg shadow-purple-500/20 hover:shadow-purple-500/40 hover:scale-[1.02] transition-all flex items-center justify-center gap-2"
-                        >
-                            <Send size={18} />
-                            Submit Review
-                        </button>
+                        <div className="grid grid-cols-2 gap-4">
+                            <button
+                                type="submit"
+                                className="w-full py-4 gradient-bg rounded-xl font-bold text-white shadow-lg shadow-purple-500/20 hover:shadow-purple-500/40 hover:scale-[1.02] transition-all flex items-center justify-center gap-2"
+                            >
+                                <Send size={18} />
+                                Post Locally
+                            </button>
+                            <button
+                                type="button"
+                                onClick={handleEmailReview}
+                                className="w-full py-4 bg-white/5 border border-white/10 rounded-xl font-bold text-white hover:bg-white/10 hover:scale-[1.02] transition-all flex items-center justify-center gap-2"
+                            >
+                                <Mail size={18} />
+                                Send via Email
+                            </button>
+                        </div>
                         <p className="text-xs text-gray-500 text-center mt-2">
-                            *Reviews are displayed instantly for this session.
+                            *Post Locally saves to your device. Send via Email to submit for official implementation.
                         </p>
                     </form>
                 </motion.div>
@@ -130,7 +164,7 @@ export default function Testimonials() {
                 {/* Reviews List */}
                 <div className="space-y-6">
                     <AnimatePresence mode="popLayout">
-                        {reviews.length === 0 ? (
+                        {(!isClient || reviews.length === 0) ? (
                             <motion.div
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
