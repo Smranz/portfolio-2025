@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Star, Send, User, Briefcase } from "lucide-react";
 import { db } from "@/lib/firebase";
-import { collection, addDoc, onSnapshot, query, orderBy } from "firebase/firestore";
+import { collection, addDoc, onSnapshot, query, orderBy, serverTimestamp } from "firebase/firestore";
 
 export default function Testimonials() {
     const [reviews, setReviews] = useState([]);
@@ -50,7 +50,7 @@ export default function Testimonials() {
                 text: formData.message,
                 initials: formData.name.substring(0, 2).toUpperCase(),
                 rating: formData.rating,
-                createdAt: new Date().toISOString()
+                createdAt: serverTimestamp()
             });
 
             setFormData({ name: "", role: "", message: "", rating: 5 });
