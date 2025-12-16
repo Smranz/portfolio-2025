@@ -26,20 +26,32 @@ export default function ParticleBackground() {
         });
 
         // Mouse reveal radius (bubble size)
-        const REVEAL_RADIUS = 200;
-        const REPEL_FORCE = 80;
+        const REVEAL_RADIUS = 220;
+        const REPEL_FORCE = 100;
 
-        // Particle Class with Mouse Bubble Effect
+        // Particle Class with Smooth Zero-Gravity Physics
         class Particle {
             constructor() {
                 this.x = Math.random() * canvas.width;
                 this.y = Math.random() * canvas.height;
                 this.baseX = this.x;
                 this.baseY = this.y;
-                this.size = Math.random() * 2 + 0.5;
-                this.speedX = (Math.random() - 0.5) * 0.5;
-                this.speedY = (Math.random() - 0.5) * 0.5;
-                this.density = (Math.random() * 20) + 10;
+
+                // Velocity for smooth momentum
+                this.vx = 0;
+                this.vy = 0;
+
+                this.size = Math.random() * 2.5 + 0.8;
+
+                // Gentle floating motion
+                this.floatSpeed = (Math.random() - 0.5) * 0.3;
+                this.floatAngle = Math.random() * Math.PI * 2;
+                this.floatRadius = Math.random() * 1.5;
+
+                // Physics properties for smooth movement
+                this.friction = 0.92; // Fluid drag
+                this.springStrength = 0.02; // Spring back to position
+                this.mass = Math.random() * 0.5 + 0.5;
             }
 
             update(mouse) {
@@ -48,30 +60,45 @@ export default function ParticleBackground() {
                 const dy = mouse.y - this.y;
                 const distance = Math.sqrt(dx * dx + dy * dy);
 
-                // Mouse repulsion within bubble
-                if (distance < REPEL_FORCE) {
+                // Smooth repulsion force (like pushing through water)
+                if (distance < REPEL_FORCE && distance > 0) {
                     const force = (REPEL_FORCE - distance) / REPEL_FORCE;
-                    const directionX = (this.x - mouse.x) / distance;
-                    const directionY = (this.y - mouse.y) / distance;
-                    this.x += directionX * force * this.density * 0.3;
-                    this.y += directionY * force * this.density * 0.3;
-                } else {
-                    // Spring back to base position
-                    const dx = this.x - this.baseX;
-                    const dy = this.y - this.baseY;
-                    this.x -= dx * 0.05;
-                    this.y -= dy * 0.05;
+                    const angle = Math.atan2(this.y - mouse.y, this.x - mouse.x);
+
+                    // Apply force with smooth easing
+                    const smoothForce = Math.pow(force, 1.5) * 2;
+                    this.vx += Math.cos(angle) * smoothForce / this.mass;
+                    this.vy += Math.sin(angle) * smoothForce / this.mass;
                 }
 
-                // Subtle drift
-                this.baseX += this.speedX;
-                this.baseY += this.speedY;
+                // Gentle floating motion (zero gravity drift)
+                this.floatAngle += this.floatSpeed * 0.02;
+                const floatX = Math.cos(this.floatAngle) * this.floatRadius * 0.1;
+                const floatY = Math.sin(this.floatAngle) * this.floatRadius * 0.1;
 
-                // Wrap around edges
-                if (this.baseX < 0) this.baseX = canvas.width;
-                if (this.baseX > canvas.width) this.baseX = 0;
-                if (this.baseY < 0) this.baseY = canvas.height;
-                if (this.baseY > canvas.height) this.baseY = 0;
+                this.baseX += floatX;
+                this.baseY += floatY;
+
+                // Spring force back to base position (smooth elastic)
+                const springDx = this.baseX - this.x;
+                const springDy = this.baseY - this.y;
+
+                this.vx += springDx * this.springStrength;
+                this.vy += springDy * this.springStrength;
+
+                // Apply friction (viscous drag like water)
+                this.vx *= this.friction;
+                this.vy *= this.friction;
+
+                // Update position with velocity
+                this.x += this.vx;
+                this.y += this.vy;
+
+                // Wrap around edges smoothly
+                if (this.baseX < -10) this.baseX = canvas.width + 10;
+                if (this.baseX > canvas.width + 10) this.baseX = -10;
+                if (this.baseY < -10) this.baseY = canvas.height + 10;
+                if (this.baseY > canvas.height + 10) this.baseY = -10;
             }
 
             draw(mouse) {
@@ -82,27 +109,38 @@ export default function ParticleBackground() {
 
                 // Only draw if within reveal radius (bubble effect)
                 if (distance < REVEAL_RADIUS) {
-                    // Fade based on distance from mouse (bubble edge fade)
-                    const opacity = 1 - (distance / REVEAL_RADIUS);
-                    const finalOpacity = Math.pow(opacity, 0.8); // Smoother falloff
+                    // Smooth fade with easing curve
+                    const rawOpacity = 1 - (distance / REVEAL_RADIUS);
+                    const finalOpacity = Math.pow(rawOpacity, 1.2) * 0.85;
 
-                    // Draw glow
+                    // Subtle pulsing effect
+                    const pulse = Math.sin(Date.now() * 0.001 + this.x * 0.01) * 0.1 + 0.9;
+
+                    // Draw soft glow (water-like shimmer)
                     const gradient = ctx.createRadialGradient(
                         this.x, this.y, 0,
-                        this.x, this.y, this.size * 3
+                        this.x, this.y, this.size * 4
                     );
 
                     const grey = 220 + Math.floor(Math.random() * 35);
-                    gradient.addColorStop(0, `rgba(${grey}, ${grey}, ${grey}, ${finalOpacity * 0.8})`);
+                    gradient.addColorStop(0, `rgba(${grey}, ${grey}, ${grey}, ${finalOpacity * pulse * 0.9})`);
+                    gradient.addColorStop(0.4, `rgba(${grey}, ${grey}, ${grey}, ${finalOpacity * pulse * 0.5})`);
                     gradient.addColorStop(1, `rgba(${grey}, ${grey}, ${grey}, 0)`);
 
                     ctx.fillStyle = gradient;
                     ctx.beginPath();
-                    ctx.arc(this.x, this.y, this.size * 3, 0, Math.PI * 2);
+                    ctx.arc(this.x, this.y, this.size * 4, 0, Math.PI * 2);
                     ctx.fill();
 
-                    // Core particle
-                    ctx.fillStyle = `rgba(${grey}, ${grey}, ${grey}, ${finalOpacity})`;
+                    // Core particle with soft edge
+                    const coreGradient = ctx.createRadialGradient(
+                        this.x, this.y, 0,
+                        this.x, this.y, this.size
+                    );
+                    coreGradient.addColorStop(0, `rgba(${grey}, ${grey}, ${grey}, ${finalOpacity * pulse})`);
+                    coreGradient.addColorStop(1, `rgba(${grey}, ${grey}, ${grey}, ${finalOpacity * pulse * 0.7})`);
+
+                    ctx.fillStyle = coreGradient;
                     ctx.beginPath();
                     ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
                     ctx.fill();
@@ -110,9 +148,9 @@ export default function ParticleBackground() {
             }
         }
 
-        // Connect particles with lines (only visible in bubble)
+        // Connect particles with smooth, flowing lines
         const connectParticles = (mouse) => {
-            const maxDistance = 80;
+            const maxDistance = 90;
 
             for (let i = 0; i < particles.length; i++) {
                 const p1 = particles[i];
@@ -138,14 +176,21 @@ export default function ParticleBackground() {
                             const particleDist = Math.sqrt(pdx * pdx + pdy * pdy);
 
                             if (particleDist < maxDistance) {
-                                // Calculate opacity based on both particles' distance from mouse
-                                const opacity1 = 1 - (dist1 / REVEAL_RADIUS);
-                                const opacity2 = 1 - (dist2 / REVEAL_RADIUS);
+                                // Smooth opacity calculation
+                                const opacity1 = Math.pow(1 - (dist1 / REVEAL_RADIUS), 1.2);
+                                const opacity2 = Math.pow(1 - (dist2 / REVEAL_RADIUS), 1.2);
                                 const avgOpacity = (opacity1 + opacity2) / 2;
-                                const lineOpacity = (1 - particleDist / maxDistance) * avgOpacity * 0.3;
+                                const distanceOpacity = 1 - (particleDist / maxDistance);
+                                const lineOpacity = avgOpacity * Math.pow(distanceOpacity, 0.8) * 0.35;
 
-                                ctx.strokeStyle = `rgba(200, 200, 200, ${lineOpacity})`;
-                                ctx.lineWidth = 0.5;
+                                // Draw smooth line with gradient
+                                const lineGradient = ctx.createLinearGradient(p1.x, p1.y, p2.x, p2.y);
+                                lineGradient.addColorStop(0, `rgba(210, 210, 220, ${lineOpacity})`);
+                                lineGradient.addColorStop(0.5, `rgba(220, 220, 230, ${lineOpacity * 1.2})`);
+                                lineGradient.addColorStop(1, `rgba(210, 210, 220, ${lineOpacity})`);
+
+                                ctx.strokeStyle = lineGradient;
+                                ctx.lineWidth = 0.8;
                                 ctx.beginPath();
                                 ctx.moveTo(p1.x, p1.y);
                                 ctx.lineTo(p2.x, p2.y);
@@ -160,7 +205,7 @@ export default function ParticleBackground() {
         // Initialize particles
         const initParticles = () => {
             particles = [];
-            const particleDensity = window.innerWidth < 768 ? 8000 : 5000;
+            const particleDensity = window.innerWidth < 768 ? 7000 : 4500;
             const numberOfParticles = Math.floor((canvas.width * canvas.height) / particleDensity);
 
             for (let i = 0; i < numberOfParticles; i++) {
@@ -170,7 +215,7 @@ export default function ParticleBackground() {
         };
         initParticles();
 
-        // Mouse move handler
+        // Mouse move handler with smooth tracking
         const handleMouseMove = (e) => {
             mouseRef.current.x = e.clientX;
             mouseRef.current.y = e.clientY;
@@ -194,7 +239,7 @@ export default function ParticleBackground() {
         window.addEventListener("touchmove", handleTouchMove);
         window.addEventListener("mouseleave", handleMouseLeave);
 
-        // Animation loop
+        // Animation loop with smooth rendering
         let lastTime = 0;
         const fps = 60;
         const interval = 1000 / fps;
@@ -203,17 +248,19 @@ export default function ParticleBackground() {
             const deltaTime = currentTime - lastTime;
 
             if (deltaTime >= interval) {
-                // Clear canvas
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                // Smooth clear with slight trail for fluid effect
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-                // Draw bubble glow effect around mouse
+                // Draw soft bubble glow around mouse
                 if (mouseRef.current.x > 0 && mouseRef.current.y > 0) {
                     const bubbleGradient = ctx.createRadialGradient(
                         mouseRef.current.x, mouseRef.current.y, 0,
                         mouseRef.current.x, mouseRef.current.y, REVEAL_RADIUS
                     );
-                    bubbleGradient.addColorStop(0, 'rgba(168, 85, 247, 0.03)');
-                    bubbleGradient.addColorStop(0.5, 'rgba(168, 85, 247, 0.01)');
+                    bubbleGradient.addColorStop(0, 'rgba(168, 85, 247, 0.04)');
+                    bubbleGradient.addColorStop(0.3, 'rgba(168, 85, 247, 0.02)');
+                    bubbleGradient.addColorStop(0.7, 'rgba(6, 182, 212, 0.01)');
                     bubbleGradient.addColorStop(1, 'rgba(168, 85, 247, 0)');
 
                     ctx.fillStyle = bubbleGradient;
@@ -228,7 +275,7 @@ export default function ParticleBackground() {
                     particle.draw(mouseRef.current);
                 });
 
-                // Connect particles
+                // Connect particles with smooth lines
                 connectParticles(mouseRef.current);
 
                 lastTime = currentTime - (deltaTime % interval);
@@ -254,7 +301,7 @@ export default function ParticleBackground() {
         <canvas
             ref={canvasRef}
             className="absolute inset-0 -z-10 pointer-events-none"
-            style={{ opacity: 0.9 }}
+            style={{ opacity: 0.92 }}
         />
     );
 }
