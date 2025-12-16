@@ -3,7 +3,6 @@ import { useEffect, useRef } from "react";
 
 export default function ParticleBackground() {
     const canvasRef = useRef(null);
-    const mouseRef = useRef({ x: 0, y: 0, radius: 150 });
     const particlesRef = useRef([]);
     const animationFrameRef = useRef(null);
 
@@ -25,176 +24,111 @@ export default function ParticleBackground() {
             initParticles();
         });
 
-        // Particle colors matching your design
-        const colors = [
-            { r: 168, g: 85, b: 247 },   // Purple
-            { r: 6, g: 182, b: 212 },     // Cyan
-            { r: 236, g: 72, b: 153 },    // Pink
-            { r: 139, g: 92, b: 246 },    // Violet
-        ];
-
-        // Particle class
+        // Google Antigravity Particle Class
         class Particle {
             constructor() {
                 this.reset();
-                this.y = Math.random() * canvas.height;
-                this.baseX = this.x;
-                this.baseY = this.y;
-                this.color = colors[Math.floor(Math.random() * colors.length)];
             }
 
             reset() {
+                // Start from bottom or random position
                 this.x = Math.random() * canvas.width;
-                this.y = Math.random() * canvas.height;
-                this.baseX = this.x;
-                this.baseY = this.y;
-                this.size = Math.random() * 2.5 + 0.8;
-                this.speedX = Math.random() * 0.4 - 0.2;
-                this.speedY = Math.random() * 0.4 - 0.2;
-                this.density = Math.random() * 30 + 5;
-                this.pulseSpeed = Math.random() * 0.02 + 0.01;
-                this.pulsePhase = Math.random() * Math.PI * 2;
+                this.y = canvas.height + Math.random() * 100;
+
+                // Very small particles like Google Antigravity
+                this.size = Math.random() * 1.5 + 0.5;
+
+                // Slow upward drift (antigravity)
+                this.speedX = (Math.random() - 0.5) * 0.3;
+                this.speedY = -(Math.random() * 0.5 + 0.2); // Negative = upward
+
+                // Lifecycle for fade in/out
+                this.life = 0;
+                this.maxLife = Math.random() * 300 + 200;
+                this.fadeInDuration = 50;
+                this.fadeOutDuration = 50;
+
+                // Subtle horizontal drift
+                this.driftSpeed = (Math.random() - 0.5) * 0.05;
+                this.driftPhase = Math.random() * Math.PI * 2;
             }
 
-            update(mouse) {
-                // Calculate distance from mouse
-                const dx = mouse.x - this.x;
-                const dy = mouse.y - this.y;
-                const distance = Math.sqrt(dx * dx + dy * dy);
-                const forceDirectionX = dx / distance;
-                const forceDirectionY = dy / distance;
-                const maxDistance = mouse.radius;
-                const force = (maxDistance - distance) / maxDistance;
+            update() {
+                // Move upward (antigravity effect)
+                this.y += this.speedY;
+                this.x += this.speedX;
 
-                if (distance < mouse.radius) {
-                    // Repel from mouse with smooth easing
-                    const directionX = forceDirectionX * force * this.density * 0.8;
-                    const directionY = forceDirectionY * force * this.density * 0.8;
-                    this.x -= directionX;
-                    this.y -= directionY;
-                } else {
-                    // Return to base position with smooth spring effect
-                    if (this.x !== this.baseX) {
-                        const dx = this.x - this.baseX;
-                        this.x -= dx / 15;
-                    }
-                    if (this.y !== this.baseY) {
-                        const dy = this.y - this.baseY;
-                        this.y -= dy / 15;
-                    }
+                // Add subtle horizontal drift with sine wave
+                this.driftPhase += 0.02;
+                this.x += Math.sin(this.driftPhase) * this.driftSpeed;
+
+                // Update lifecycle
+                this.life++;
+
+                // Reset when particle dies or goes off screen
+                if (this.life >= this.maxLife || this.y < -20) {
+                    this.reset();
                 }
-
-                // Drift slowly for organic movement
-                this.baseX += this.speedX;
-                this.baseY += this.speedY;
-
-                // Pulse animation
-                this.pulsePhase += this.pulseSpeed;
-
-                // Wrap around edges
-                if (this.baseX < -10) this.baseX = canvas.width + 10;
-                if (this.baseX > canvas.width + 10) this.baseX = -10;
-                if (this.baseY < -10) this.baseY = canvas.height + 10;
-                if (this.baseY > canvas.height + 10) this.baseY = -10;
             }
 
             draw() {
-                // Pulsing size effect
-                const pulse = Math.sin(this.pulsePhase) * 0.3 + 1;
-                const currentSize = this.size * pulse;
+                // Calculate opacity based on lifecycle (fade in/out)
+                let opacity;
+                if (this.life < this.fadeInDuration) {
+                    // Fade in
+                    opacity = this.life / this.fadeInDuration;
+                } else if (this.life > this.maxLife - this.fadeOutDuration) {
+                    // Fade out
+                    opacity = (this.maxLife - this.life) / this.fadeOutDuration;
+                } else {
+                    // Full opacity
+                    opacity = 1;
+                }
 
-                // Draw particle with gradient
+                opacity = Math.max(0, Math.min(1, opacity)) * 0.6;
+
+                // Draw particle - grey/white like Google Antigravity
+                const grey = 200 + Math.floor(Math.random() * 55);
+
+                // Outer glow (very subtle)
+                ctx.beginPath();
                 const gradient = ctx.createRadialGradient(
                     this.x, this.y, 0,
-                    this.x, this.y, currentSize * 3
+                    this.x, this.y, this.size * 4
                 );
-
-                gradient.addColorStop(0, `rgba(${this.color.r}, ${this.color.g}, ${this.color.b}, 0.8)`);
-                gradient.addColorStop(0.5, `rgba(${this.color.r}, ${this.color.g}, ${this.color.b}, 0.4)`);
-                gradient.addColorStop(1, `rgba(${this.color.r}, ${this.color.g}, ${this.color.b}, 0)`);
-
+                gradient.addColorStop(0, `rgba(${grey}, ${grey}, ${grey}, ${opacity * 0.8})`);
+                gradient.addColorStop(1, `rgba(${grey}, ${grey}, ${grey}, 0)`);
                 ctx.fillStyle = gradient;
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, currentSize * 2, 0, Math.PI * 2);
-                ctx.closePath();
+                ctx.arc(this.x, this.y, this.size * 4, 0, Math.PI * 2);
                 ctx.fill();
 
                 // Core particle
-                ctx.fillStyle = `rgba(${this.color.r}, ${this.color.g}, ${this.color.b}, 0.9)`;
                 ctx.beginPath();
-                ctx.arc(this.x, this.y, currentSize, 0, Math.PI * 2);
-                ctx.closePath();
+                ctx.fillStyle = `rgba(${grey}, ${grey}, ${grey}, ${opacity})`;
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
                 ctx.fill();
             }
         }
 
-        // Initialize particles
+        // Initialize particles - many more for Google Antigravity effect
         const initParticles = () => {
             particles = [];
-            // Responsive particle count based on screen size
-            const particleDensity = window.innerWidth < 768 ? 12000 : 9000;
+            // Higher density for the Google Antigravity effect
+            const particleDensity = window.innerWidth < 768 ? 6000 : 4000;
             const numberOfParticles = Math.floor((canvas.width * canvas.height) / particleDensity);
+
             for (let i = 0; i < numberOfParticles; i++) {
-                particles.push(new Particle());
+                const particle = new Particle();
+                // Initialize at random positions for initial appearance
+                particle.y = Math.random() * canvas.height;
+                particle.life = Math.random() * particle.maxLife;
+                particles.push(particle);
             }
             particlesRef.current = particles;
         };
         initParticles();
 
-        // Connect particles with lines
-        const connectParticles = () => {
-            const maxConnectionDistance = 100;
-
-            for (let i = 0; i < particles.length; i++) {
-                for (let j = i + 1; j < particles.length; j++) {
-                    const dx = particles[i].x - particles[j].x;
-                    const dy = particles[i].y - particles[j].y;
-                    const distance = Math.sqrt(dx * dx + dy * dy);
-
-                    if (distance < maxConnectionDistance) {
-                        const opacity = (1 - distance / maxConnectionDistance) * 0.25;
-
-                        // Mix colors for the connection line
-                        const r = (particles[i].color.r + particles[j].color.r) / 2;
-                        const g = (particles[i].color.g + particles[j].color.g) / 2;
-                        const b = (particles[i].color.b + particles[j].color.b) / 2;
-
-                        ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, ${opacity})`;
-                        ctx.lineWidth = 0.7;
-                        ctx.beginPath();
-                        ctx.moveTo(particles[i].x, particles[i].y);
-                        ctx.lineTo(particles[j].x, particles[j].y);
-                        ctx.stroke();
-                    }
-                }
-            }
-        };
-
-        // Mouse move handler
-        const handleMouseMove = (e) => {
-            mouseRef.current.x = e.clientX;
-            mouseRef.current.y = e.clientY;
-        };
-
-        // Touch move handler for mobile
-        const handleTouchMove = (e) => {
-            if (e.touches.length > 0) {
-                mouseRef.current.x = e.touches[0].clientX;
-                mouseRef.current.y = e.touches[0].clientY;
-            }
-        };
-
-        // Touch end handler
-        const handleTouchEnd = () => {
-            mouseRef.current.x = -1000;
-            mouseRef.current.y = -1000;
-        };
-
-        window.addEventListener("mousemove", handleMouseMove);
-        window.addEventListener("touchmove", handleTouchMove);
-        window.addEventListener("touchend", handleTouchEnd);
-
-        // Animation loop with performance optimization
+        // Animation loop
         let lastTime = 0;
         const fps = 60;
         const interval = 1000 / fps;
@@ -203,14 +137,15 @@ export default function ParticleBackground() {
             const deltaTime = currentTime - lastTime;
 
             if (deltaTime >= interval) {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                // Clear with slight trail effect for smoother appearance
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+                // Update and draw all particles
                 particles.forEach((particle) => {
-                    particle.update(mouseRef.current);
+                    particle.update();
                     particle.draw();
                 });
-
-                connectParticles();
 
                 lastTime = currentTime - (deltaTime % interval);
             }
@@ -222,9 +157,6 @@ export default function ParticleBackground() {
         // Cleanup
         return () => {
             window.removeEventListener("resize", setCanvasSize);
-            window.removeEventListener("mousemove", handleMouseMove);
-            window.removeEventListener("touchmove", handleTouchMove);
-            window.removeEventListener("touchend", handleTouchEnd);
             if (animationFrameRef.current) {
                 cancelAnimationFrame(animationFrameRef.current);
             }
@@ -235,8 +167,7 @@ export default function ParticleBackground() {
         <canvas
             ref={canvasRef}
             className="absolute inset-0 -z-10 pointer-events-none"
-            style={{ opacity: 0.65 }}
+            style={{ opacity: 0.8 }}
         />
     );
 }
-
