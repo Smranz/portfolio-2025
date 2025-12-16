@@ -1,11 +1,17 @@
 "use client";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export default function ParticleBackground() {
     const canvasRef = useRef(null);
     const particlesRef = useRef([]);
     const mouseRef = useRef({ x: -1000, y: -1000 });
     const animationFrameRef = useRef(null);
+    const [isMounted, setIsMounted] = useState(false);
+
+    // Ensure component only renders on client to prevent hydration mismatch
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
 
     useEffect(() => {
         const canvas = canvasRef.current;
@@ -296,6 +302,11 @@ export default function ParticleBackground() {
             }
         };
     }, []);
+
+    // Only render canvas after client-side mount to prevent hydration mismatch
+    if (!isMounted) {
+        return null;
+    }
 
     return (
         <canvas
