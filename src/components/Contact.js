@@ -134,6 +134,23 @@ export default function Contact() {
                 >
                     <Github size={20} />
                 </a>
+
+                {/* Fiverr - Green */}
+                <a
+                    href="https://www.fiverr.com/users/samranz/seller_dashboard"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-12 h-12 bg-[#0a0a0a] border border-white/10 rounded-full flex items-center justify-center text-gray-400 hover:border-[#1DBF73] hover:text-[#1DBF73] hover:shadow-[0_0_15px_rgba(29,191,115,0.5)] hover:-translate-y-1 transition-all"
+                >
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                        className="w-5 h-5"
+                    >
+                        <path d="M21.469 16.587c.801 0 1.258-.457 1.258-1.295V10.23c0-3.351-1.847-5.388-5.748-5.388-3.046 0-5.121 1.77-5.464 4.512h2.247c.229-1.485 1.504-2.285 3.01-2.285 1.866 0 2.876.952 2.876 2.475v.571-1.923H21.469V16.587zm-11.826 0V10.744H7.265v5.843H9.643zm8.569 0V12.763c0-1.219-.533-2.057-1.809-2.057-1.352 0-2.095.952-2.133 2.152v3.729h-2.361V10.744h2.361v1.161c.609-.895 1.561-1.428 2.818-1.428 2.057 0 3.485 1.295 3.485 3.5v2.609H18.212zm-15.679 0h2.361V4.842H2.533V16.587zm2.361-13.483c0 .762-.571 1.333-1.333 1.333-.762 0-1.333-.571-1.333-1.333 0-.762.571-1.333 1.333-1.333.762 0 1.333.571 1.333 1.333z" />
+                    </svg>
+                </a>
             </motion.div>
         </section>
     );
