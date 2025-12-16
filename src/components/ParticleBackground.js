@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 export default function ParticleBackground() {
     const canvasRef = useRef(null);
     const particlesRef = useRef([]);
+    const mouseRef = useRef({ x: -1000, y: -1000 });
     const animationFrameRef = useRef(null);
 
     useEffect(() => {
@@ -24,109 +25,174 @@ export default function ParticleBackground() {
             initParticles();
         });
 
-        // Google Antigravity Particle Class
+        // Mouse reveal radius (bubble size)
+        const REVEAL_RADIUS = 200;
+        const REPEL_FORCE = 80;
+
+        // Particle Class with Mouse Bubble Effect
         class Particle {
             constructor() {
-                this.reset();
-            }
-
-            reset() {
-                // Start from bottom or random position
                 this.x = Math.random() * canvas.width;
-                this.y = canvas.height + Math.random() * 100;
-
-                // Very small particles like Google Antigravity
-                this.size = Math.random() * 1.5 + 0.5;
-
-                // Slow upward drift (antigravity)
-                this.speedX = (Math.random() - 0.5) * 0.3;
-                this.speedY = -(Math.random() * 0.5 + 0.2); // Negative = upward
-
-                // Lifecycle for fade in/out
-                this.life = 0;
-                this.maxLife = Math.random() * 300 + 200;
-                this.fadeInDuration = 50;
-                this.fadeOutDuration = 50;
-
-                // Subtle horizontal drift
-                this.driftSpeed = (Math.random() - 0.5) * 0.05;
-                this.driftPhase = Math.random() * Math.PI * 2;
+                this.y = Math.random() * canvas.height;
+                this.baseX = this.x;
+                this.baseY = this.y;
+                this.size = Math.random() * 2 + 0.5;
+                this.speedX = (Math.random() - 0.5) * 0.5;
+                this.speedY = (Math.random() - 0.5) * 0.5;
+                this.density = (Math.random() * 20) + 10;
             }
 
-            update() {
-                // Move upward (antigravity effect)
-                this.y += this.speedY;
-                this.x += this.speedX;
+            update(mouse) {
+                // Calculate distance from mouse
+                const dx = mouse.x - this.x;
+                const dy = mouse.y - this.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
 
-                // Add subtle horizontal drift with sine wave
-                this.driftPhase += 0.02;
-                this.x += Math.sin(this.driftPhase) * this.driftSpeed;
-
-                // Update lifecycle
-                this.life++;
-
-                // Reset when particle dies or goes off screen
-                if (this.life >= this.maxLife || this.y < -20) {
-                    this.reset();
-                }
-            }
-
-            draw() {
-                // Calculate opacity based on lifecycle (fade in/out)
-                let opacity;
-                if (this.life < this.fadeInDuration) {
-                    // Fade in
-                    opacity = this.life / this.fadeInDuration;
-                } else if (this.life > this.maxLife - this.fadeOutDuration) {
-                    // Fade out
-                    opacity = (this.maxLife - this.life) / this.fadeOutDuration;
+                // Mouse repulsion within bubble
+                if (distance < REPEL_FORCE) {
+                    const force = (REPEL_FORCE - distance) / REPEL_FORCE;
+                    const directionX = (this.x - mouse.x) / distance;
+                    const directionY = (this.y - mouse.y) / distance;
+                    this.x += directionX * force * this.density * 0.3;
+                    this.y += directionY * force * this.density * 0.3;
                 } else {
-                    // Full opacity
-                    opacity = 1;
+                    // Spring back to base position
+                    const dx = this.x - this.baseX;
+                    const dy = this.y - this.baseY;
+                    this.x -= dx * 0.05;
+                    this.y -= dy * 0.05;
                 }
 
-                opacity = Math.max(0, Math.min(1, opacity)) * 0.6;
+                // Subtle drift
+                this.baseX += this.speedX;
+                this.baseY += this.speedY;
 
-                // Draw particle - grey/white like Google Antigravity
-                const grey = 200 + Math.floor(Math.random() * 55);
+                // Wrap around edges
+                if (this.baseX < 0) this.baseX = canvas.width;
+                if (this.baseX > canvas.width) this.baseX = 0;
+                if (this.baseY < 0) this.baseY = canvas.height;
+                if (this.baseY > canvas.height) this.baseY = 0;
+            }
 
-                // Outer glow (very subtle)
-                ctx.beginPath();
-                const gradient = ctx.createRadialGradient(
-                    this.x, this.y, 0,
-                    this.x, this.y, this.size * 4
-                );
-                gradient.addColorStop(0, `rgba(${grey}, ${grey}, ${grey}, ${opacity * 0.8})`);
-                gradient.addColorStop(1, `rgba(${grey}, ${grey}, ${grey}, 0)`);
-                ctx.fillStyle = gradient;
-                ctx.arc(this.x, this.y, this.size * 4, 0, Math.PI * 2);
-                ctx.fill();
+            draw(mouse) {
+                // Calculate distance from mouse for visibility
+                const dx = mouse.x - this.x;
+                const dy = mouse.y - this.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
 
-                // Core particle
-                ctx.beginPath();
-                ctx.fillStyle = `rgba(${grey}, ${grey}, ${grey}, ${opacity})`;
-                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                ctx.fill();
+                // Only draw if within reveal radius (bubble effect)
+                if (distance < REVEAL_RADIUS) {
+                    // Fade based on distance from mouse (bubble edge fade)
+                    const opacity = 1 - (distance / REVEAL_RADIUS);
+                    const finalOpacity = Math.pow(opacity, 0.8); // Smoother falloff
+
+                    // Draw glow
+                    const gradient = ctx.createRadialGradient(
+                        this.x, this.y, 0,
+                        this.x, this.y, this.size * 3
+                    );
+
+                    const grey = 220 + Math.floor(Math.random() * 35);
+                    gradient.addColorStop(0, `rgba(${grey}, ${grey}, ${grey}, ${finalOpacity * 0.8})`);
+                    gradient.addColorStop(1, `rgba(${grey}, ${grey}, ${grey}, 0)`);
+
+                    ctx.fillStyle = gradient;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size * 3, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Core particle
+                    ctx.fillStyle = `rgba(${grey}, ${grey}, ${grey}, ${finalOpacity})`;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
             }
         }
 
-        // Initialize particles - many more for Google Antigravity effect
+        // Connect particles with lines (only visible in bubble)
+        const connectParticles = (mouse) => {
+            const maxDistance = 80;
+
+            for (let i = 0; i < particles.length; i++) {
+                const p1 = particles[i];
+
+                // Check if particle is in reveal radius
+                const dx1 = mouse.x - p1.x;
+                const dy1 = mouse.y - p1.y;
+                const dist1 = Math.sqrt(dx1 * dx1 + dy1 * dy1);
+
+                if (dist1 < REVEAL_RADIUS) {
+                    for (let j = i + 1; j < particles.length; j++) {
+                        const p2 = particles[j];
+
+                        // Check if second particle is also in reveal radius
+                        const dx2 = mouse.x - p2.x;
+                        const dy2 = mouse.y - p2.y;
+                        const dist2 = Math.sqrt(dx2 * dx2 + dy2 * dy2);
+
+                        if (dist2 < REVEAL_RADIUS) {
+                            // Calculate distance between particles
+                            const pdx = p1.x - p2.x;
+                            const pdy = p1.y - p2.y;
+                            const particleDist = Math.sqrt(pdx * pdx + pdy * pdy);
+
+                            if (particleDist < maxDistance) {
+                                // Calculate opacity based on both particles' distance from mouse
+                                const opacity1 = 1 - (dist1 / REVEAL_RADIUS);
+                                const opacity2 = 1 - (dist2 / REVEAL_RADIUS);
+                                const avgOpacity = (opacity1 + opacity2) / 2;
+                                const lineOpacity = (1 - particleDist / maxDistance) * avgOpacity * 0.3;
+
+                                ctx.strokeStyle = `rgba(200, 200, 200, ${lineOpacity})`;
+                                ctx.lineWidth = 0.5;
+                                ctx.beginPath();
+                                ctx.moveTo(p1.x, p1.y);
+                                ctx.lineTo(p2.x, p2.y);
+                                ctx.stroke();
+                            }
+                        }
+                    }
+                }
+            }
+        };
+
+        // Initialize particles
         const initParticles = () => {
             particles = [];
-            // Higher density for the Google Antigravity effect
-            const particleDensity = window.innerWidth < 768 ? 6000 : 4000;
+            const particleDensity = window.innerWidth < 768 ? 8000 : 5000;
             const numberOfParticles = Math.floor((canvas.width * canvas.height) / particleDensity);
 
             for (let i = 0; i < numberOfParticles; i++) {
-                const particle = new Particle();
-                // Initialize at random positions for initial appearance
-                particle.y = Math.random() * canvas.height;
-                particle.life = Math.random() * particle.maxLife;
-                particles.push(particle);
+                particles.push(new Particle());
             }
             particlesRef.current = particles;
         };
         initParticles();
+
+        // Mouse move handler
+        const handleMouseMove = (e) => {
+            mouseRef.current.x = e.clientX;
+            mouseRef.current.y = e.clientY;
+        };
+
+        // Touch move handler
+        const handleTouchMove = (e) => {
+            if (e.touches.length > 0) {
+                mouseRef.current.x = e.touches[0].clientX;
+                mouseRef.current.y = e.touches[0].clientY;
+            }
+        };
+
+        // Mouse leave - hide bubble
+        const handleMouseLeave = () => {
+            mouseRef.current.x = -1000;
+            mouseRef.current.y = -1000;
+        };
+
+        window.addEventListener("mousemove", handleMouseMove);
+        window.addEventListener("touchmove", handleTouchMove);
+        window.addEventListener("mouseleave", handleMouseLeave);
 
         // Animation loop
         let lastTime = 0;
@@ -137,15 +203,33 @@ export default function ParticleBackground() {
             const deltaTime = currentTime - lastTime;
 
             if (deltaTime >= interval) {
-                // Clear with slight trail effect for smoother appearance
-                ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                // Clear canvas
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-                // Update and draw all particles
+                // Draw bubble glow effect around mouse
+                if (mouseRef.current.x > 0 && mouseRef.current.y > 0) {
+                    const bubbleGradient = ctx.createRadialGradient(
+                        mouseRef.current.x, mouseRef.current.y, 0,
+                        mouseRef.current.x, mouseRef.current.y, REVEAL_RADIUS
+                    );
+                    bubbleGradient.addColorStop(0, 'rgba(168, 85, 247, 0.03)');
+                    bubbleGradient.addColorStop(0.5, 'rgba(168, 85, 247, 0.01)');
+                    bubbleGradient.addColorStop(1, 'rgba(168, 85, 247, 0)');
+
+                    ctx.fillStyle = bubbleGradient;
+                    ctx.beginPath();
+                    ctx.arc(mouseRef.current.x, mouseRef.current.y, REVEAL_RADIUS, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                // Update and draw particles
                 particles.forEach((particle) => {
-                    particle.update();
-                    particle.draw();
+                    particle.update(mouseRef.current);
+                    particle.draw(mouseRef.current);
                 });
+
+                // Connect particles
+                connectParticles(mouseRef.current);
 
                 lastTime = currentTime - (deltaTime % interval);
             }
@@ -157,6 +241,9 @@ export default function ParticleBackground() {
         // Cleanup
         return () => {
             window.removeEventListener("resize", setCanvasSize);
+            window.removeEventListener("mousemove", handleMouseMove);
+            window.removeEventListener("touchmove", handleTouchMove);
+            window.removeEventListener("mouseleave", handleMouseLeave);
             if (animationFrameRef.current) {
                 cancelAnimationFrame(animationFrameRef.current);
             }
@@ -167,7 +254,7 @@ export default function ParticleBackground() {
         <canvas
             ref={canvasRef}
             className="absolute inset-0 -z-10 pointer-events-none"
-            style={{ opacity: 0.8 }}
+            style={{ opacity: 0.9 }}
         />
     );
 }
