@@ -1,9 +1,13 @@
 "use client";
 import { motion } from "framer-motion";
+import ParticleBackground from "./ParticleBackground";
 
 export default function Hero() {
     return (
         <section id="hero" className="min-h-screen flex flex-col justify-center items-center text-center relative overflow-hidden px-8">
+            {/* Particle Animation */}
+            <ParticleBackground />
+
             {/* Animated Gradient Background */}
             <div className="absolute inset-0 -z-20">
                 <div className="absolute inset-0 bg-gradient-radial from-purple-500/30 via-transparent to-transparent" />
