@@ -6,7 +6,6 @@ import About from "@/components/About";
 import SkillsOrbit from "@/components/SkillsOrbit";
 import BentoGrid from "@/components/BentoGrid";
 import StackedCards from "@/components/StackedCards";
-import Testimonials from "@/components/Testimonials";
 import Contact from "@/components/Contact";
 
 export default function Home() {
@@ -20,7 +19,6 @@ export default function Home() {
       <SkillsOrbit />
       <BentoGrid />
       <StackedCards />
-      <Testimonials />
       <Contact />
 
       <footer className="text-center py-16 border-t border-white/10 bg-[#0a0a0a]">
