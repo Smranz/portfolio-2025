@@ -108,49 +108,48 @@ export default function ParticleBackground() {
             }
 
             draw(mouse) {
-                // Calculate distance from mouse for visibility
+                // Calculate distance from mouse for interaction
                 const dx = mouse.x - this.x;
                 const dy = mouse.y - this.y;
                 const distance = Math.sqrt(dx * dx + dy * dy);
 
-                // Only draw if within reveal radius (bubble effect)
+                // Subtle pulsing effect
+                const pulse = Math.sin(Date.now() * 0.001 + this.x * 0.01) * 0.1 + 0.9;
+
+                // Base opacity logic (always visible)
+                // Increase opacity when close to mouse for interaction feedback
+                let baseOpacity = 0.4;
                 if (distance < REVEAL_RADIUS) {
-                    // Smooth fade with easing curve
-                    const rawOpacity = 1 - (distance / REVEAL_RADIUS);
-                    const finalOpacity = Math.pow(rawOpacity, 1.2) * 0.85;
-
-                    // Subtle pulsing effect
-                    const pulse = Math.sin(Date.now() * 0.001 + this.x * 0.01) * 0.1 + 0.9;
-
-                    // Draw soft glow (water-like shimmer)
-                    const gradient = ctx.createRadialGradient(
-                        this.x, this.y, 0,
-                        this.x, this.y, this.size * 4
-                    );
-
-                    const grey = 220 + Math.floor(Math.random() * 35);
-                    gradient.addColorStop(0, `rgba(${grey}, ${grey}, ${grey}, ${finalOpacity * pulse * 0.9})`);
-                    gradient.addColorStop(0.4, `rgba(${grey}, ${grey}, ${grey}, ${finalOpacity * pulse * 0.5})`);
-                    gradient.addColorStop(1, `rgba(${grey}, ${grey}, ${grey}, 0)`);
-
-                    ctx.fillStyle = gradient;
-                    ctx.beginPath();
-                    ctx.arc(this.x, this.y, this.size * 4, 0, Math.PI * 2);
-                    ctx.fill();
-
-                    // Core particle with soft edge
-                    const coreGradient = ctx.createRadialGradient(
-                        this.x, this.y, 0,
-                        this.x, this.y, this.size
-                    );
-                    coreGradient.addColorStop(0, `rgba(${grey}, ${grey}, ${grey}, ${finalOpacity * pulse})`);
-                    coreGradient.addColorStop(1, `rgba(${grey}, ${grey}, ${grey}, ${finalOpacity * pulse * 0.7})`);
-
-                    ctx.fillStyle = coreGradient;
-                    ctx.beginPath();
-                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                    ctx.fill();
+                    baseOpacity += (1 - distance / REVEAL_RADIUS) * 0.2;
                 }
+
+                // Draw soft glow
+                const gradient = ctx.createRadialGradient(
+                    this.x, this.y, 0,
+                    this.x, this.y, this.size * 4
+                );
+
+                const grey = 220 + Math.floor(Math.random() * 35);
+                gradient.addColorStop(0, `rgba(${grey}, ${grey}, ${grey}, ${baseOpacity * pulse * 0.6})`);
+                gradient.addColorStop(1, `rgba(${grey}, ${grey}, ${grey}, 0)`);
+
+                ctx.fillStyle = gradient;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size * 4, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Core particle
+                const coreGradient = ctx.createRadialGradient(
+                    this.x, this.y, 0,
+                    this.x, this.y, this.size
+                );
+                coreGradient.addColorStop(0, `rgba(${grey}, ${grey}, ${grey}, ${baseOpacity * pulse})`);
+                coreGradient.addColorStop(1, `rgba(${grey}, ${grey}, ${grey}, ${baseOpacity * pulse * 0.5})`);
+
+                ctx.fillStyle = coreGradient;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
             }
         }
 
@@ -161,48 +160,31 @@ export default function ParticleBackground() {
             for (let i = 0; i < particles.length; i++) {
                 const p1 = particles[i];
 
-                // Check if particle is in reveal radius
-                const dx1 = mouse.x - p1.x;
-                const dy1 = mouse.y - p1.y;
-                const dist1 = Math.sqrt(dx1 * dx1 + dy1 * dy1);
+                for (let j = i + 1; j < particles.length; j++) {
+                    const p2 = particles[j];
 
-                if (dist1 < REVEAL_RADIUS) {
-                    for (let j = i + 1; j < particles.length; j++) {
-                        const p2 = particles[j];
+                    // Calculate distance between particles
+                    const pdx = p1.x - p2.x;
+                    const pdy = p1.y - p2.y;
+                    const particleDist = Math.sqrt(pdx * pdx + pdy * pdy);
 
-                        // Check if second particle is also in reveal radius
-                        const dx2 = mouse.x - p2.x;
-                        const dy2 = mouse.y - p2.y;
-                        const dist2 = Math.sqrt(dx2 * dx2 + dy2 * dy2);
+                    if (particleDist < maxDistance) {
+                        // Smooth opacity calculation based on distance between particles
+                        const distanceOpacity = 1 - (particleDist / maxDistance);
+                        const lineOpacity = distanceOpacity * 0.15;
 
-                        if (dist2 < REVEAL_RADIUS) {
-                            // Calculate distance between particles
-                            const pdx = p1.x - p2.x;
-                            const pdy = p1.y - p2.y;
-                            const particleDist = Math.sqrt(pdx * pdx + pdy * pdy);
+                        // Draw smooth line with gradient
+                        const lineGradient = ctx.createLinearGradient(p1.x, p1.y, p2.x, p2.y);
+                        lineGradient.addColorStop(0, `rgba(210, 210, 220, ${lineOpacity})`);
+                        lineGradient.addColorStop(0.5, `rgba(220, 220, 230, ${lineOpacity * 1.5})`);
+                        lineGradient.addColorStop(1, `rgba(210, 210, 220, ${lineOpacity})`);
 
-                            if (particleDist < maxDistance) {
-                                // Smooth opacity calculation
-                                const opacity1 = Math.pow(1 - (dist1 / REVEAL_RADIUS), 1.2);
-                                const opacity2 = Math.pow(1 - (dist2 / REVEAL_RADIUS), 1.2);
-                                const avgOpacity = (opacity1 + opacity2) / 2;
-                                const distanceOpacity = 1 - (particleDist / maxDistance);
-                                const lineOpacity = avgOpacity * Math.pow(distanceOpacity, 0.8) * 0.35;
-
-                                // Draw smooth line with gradient
-                                const lineGradient = ctx.createLinearGradient(p1.x, p1.y, p2.x, p2.y);
-                                lineGradient.addColorStop(0, `rgba(210, 210, 220, ${lineOpacity})`);
-                                lineGradient.addColorStop(0.5, `rgba(220, 220, 230, ${lineOpacity * 1.2})`);
-                                lineGradient.addColorStop(1, `rgba(210, 210, 220, ${lineOpacity})`);
-
-                                ctx.strokeStyle = lineGradient;
-                                ctx.lineWidth = 0.8;
-                                ctx.beginPath();
-                                ctx.moveTo(p1.x, p1.y);
-                                ctx.lineTo(p2.x, p2.y);
-                                ctx.stroke();
-                            }
-                        }
+                        ctx.strokeStyle = lineGradient;
+                        ctx.lineWidth = 0.8;
+                        ctx.beginPath();
+                        ctx.moveTo(p1.x, p1.y);
+                        ctx.lineTo(p2.x, p2.y);
+                        ctx.stroke();
                     }
                 }
             }
